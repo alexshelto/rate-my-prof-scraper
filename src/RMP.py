@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-# https://www.ratemyprofessors.com/filter/professor/?&page=1&queryoption=TEACHER&queryBy=schoolId&sid=727
+# pyt
 # 132 pages of data 10sec crawl time = 22 hours.
 # # Since this will only need to fetch data at max 4 times a year might slow that down more
 
@@ -12,7 +12,7 @@ import time
 # Sends to server
 # robots.txt states crawl time of 10 secconds
 
-
+# https://www.ratemyprofessors.com/filter/professor/?&page=1&queryoption=TEACHER&queryBy=schoolId&sid=727
 
 class RMP:
   def __init__(self, school_id, crawl_time=10):
@@ -24,15 +24,27 @@ class RMP:
     page_num = 1
     keepGoing = True
     while (keepGoing):
-      read_page(page_num)
+      keepGoing = read_page(page_num)
       page_num += 1
+      self.crawl_delay()
 
 
+  #Scrapes web page, returns bool to scrape scores. if true keep scraping else, no more content
+  # Refactor to try except
   def read_page(self, n):
     link = 'https://www.ratemyprofessors.com/filter/professor/?&page={}&queryoption=TEACHER&queryBy=schoolId&sid={}'.format(n,self.school_id)
     page = requests.get(link)
     data = json.loads(page.content)
-    print(data)
+
+    #Way to stop looping page number
+    if(len(data['professors']) < 1):
+      return False
+    
+    profNum = 0
+    while (profNum < len(data['professors'])):
+      fName = data['professors'][[profNum]['tFname']
+      print(fName + ' : ' + data['professors'][profNum]['overall_score'])
+    return True
 
 
   def crawl_delay(self):
@@ -47,4 +59,4 @@ class RMP:
 ###
 if __name__ == '__main__':
   rmp = RMP(727)
-  rmp.read_page(1)
+  rmp.read_page(133)
