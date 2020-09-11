@@ -24,7 +24,8 @@ class RMP:
     page_num = 1
     keepGoing = True
     while (keepGoing):
-      keepGoing = read_page(page_num)
+      print("Scraping page: " + page_num)
+      keepGoing = self.read_page(page_num)
       page_num += 1
       self.crawl_delay()
 
@@ -38,17 +39,19 @@ class RMP:
 
     #Way to stop looping page number
     if(len(data['professors']) < 1):
-      return False
+      print("Reached last page. exiting scrape loop")
+      return False #return false: no more page content to scrape. Scrape scores stops loop
     
     profNum = 0
     while (profNum < len(data['professors'])):
-      fName = data['professors'][[profNum]['tFname']
-      print(fName + ' : ' + data['professors'][profNum]['overall_score'])
+      fName = data['professors'][profNum]['tFname'] + data['professors'][profNum]['tLname'] 
+      print(fName)
+      profNum += 1
     return True
 
 
   def crawl_delay(self):
-    time.sleep(crawl_time)
+    time.sleep(self.crawl_time)
 
 
 
@@ -59,4 +62,4 @@ class RMP:
 ###
 if __name__ == '__main__':
   rmp = RMP(727)
-  rmp.read_page(133)
+  rmp.scrape_scores()
