@@ -21,7 +21,6 @@ import sys
 # Sends to server
 # robots.txt states crawl time of 10 secconds
 
-# https://www.ratemyprofessors.com/filter/professor/?&page=1&queryoption=TEACHER&queryBy=schoolId&sid=<schoolid>
 
 class RMP:
   def __init__(self, school_id, url, crawl_time=10):
@@ -64,6 +63,8 @@ class RMP:
     return True
 
 
+
+  #used to delay requests in between scraping: RMP states a crawl rate of 10sec 
   def crawl_delay(self):
     time.sleep(self.crawl_time)
 
