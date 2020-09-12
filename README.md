@@ -15,3 +15,8 @@ example usage:
 
 ## Modifications for not using db
 simply remove the 'send-to-kv()' function and pass the prof and score into a dictionary.  
+
+
+### Example usage
+Scraping data and sending to kv store on a flask server, currently local host
+![todo-demo](https://github.com/alexshelto/rate-my-prof-scraper/blob/master/screenshots/example-usage.jpg)
