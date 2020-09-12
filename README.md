@@ -11,7 +11,7 @@ example: JohnSmith
 * server path : this is where you will be sending the professors and scores, probably as key value pairs.  
 
 example usage:
-> ./RMP.py 700 http://localhost:8000/api 
+``` ./RMP.py 700 http://localhost:8000/api ```
 
 ## Modifications for not using db
 simply remove the 'send-to-kv()' function and pass the prof and score into a dictionary.  
