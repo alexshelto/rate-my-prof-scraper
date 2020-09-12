@@ -19,4 +19,6 @@ simply remove the 'send-to-kv()' function and pass the prof and score into a dic
 
 ### Example usage
 Scraping data and sending to kv store on a flask server, currently local host
+You can see that im sending a put request to the api to store kv pair on server.  
+Alternatively get rid of the send-to-kv() and save keys and values to dict.  
 ![todo-demo](https://github.com/alexshelto/rate-my-prof-scraper/blob/master/screenshots/example-usage.jpg)
