@@ -6,30 +6,25 @@
 
 
 
-
-
-
 import requests
 import json
 import time
 import sys  
-
-
+import argparse
 
 # Rate my professor scraper
 # Scrapes all professors names & scores
 # Sends to server
 # robots.txt states crawl time of 10 secconds
 
-
 class RMP:
-  def __init__(self, school_id, url, crawl_time=10):
+  def __init__(self, school_id, crawl_time=10):
     self.school_id = school_id
+    self.scores = {}
     self.robots_info = ['']
-    self.url = url
     self.crawl_time = crawl_time
 
-  def scrape_scores(self):
+  def scrape_scores(self) -> dict:
     page_num = 1 #start page num at zero 
     keepGoing = True
     while (keepGoing):
@@ -38,14 +33,20 @@ class RMP:
       page_num += 1
       self.crawl_delay()
     
-    print("Outside of the scrape loop")
+    return self.scores
 
 
   #Scrapes web page, returns bool to scrape scores. if true keep scraping else, no more content
   # Refactor to try except
-  def read_page(self, n):
+  def read_page(self, n) -> bool:
     link = 'https://www.ratemyprofessors.com/filter/professor/?&page={}&queryoption=TEACHER&queryBy=schoolId&sid={}'.format(n,self.school_id)
-    page = requests.get(link)
+
+    try:
+        page = requests.get(link)
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
+        print('Server taking too long. Try again later')
+        exit(1)
+
     data = json.loads(page.content)
 
     #Way to stop looping page number
@@ -57,47 +58,37 @@ class RMP:
     while (profNum < len(data['professors'])):
       name = data['professors'][profNum]['tFname'] + data['professors'][profNum]['tLname']
       score = data['professors'][profNum]['overall_rating']
-      print(name + ' : ' + score)
-      self.send_to_kv(name, score) #seeds the server
+      #self.send_to_kv(name, score) #seeds the server
+
+      self.scores[name] = score;
       profNum += 1
+
     return True
 
 
 
   #used to delay requests in between scraping: RMP states a crawl rate of 10sec 
-  def crawl_delay(self):
+  def crawl_delay(self) -> None:
     time.sleep(self.crawl_time)
 
 
 
-  #sends a put request to the db api url
-  #If the scraped value is 'N/A' we are not sending the score
-  def send_to_kv(self, name, score):
-    if(score == 'N/A'): return
-    
-    #change this line to work with your api
-    put_url = self.url + '/'+ name + '/' + score #building post url from inputted url
-    r = requests.put(put_url)
-    if r.status_code != 200:
-      print("There was an error sending {}'s score to the kv".format(name))
 
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('id', help='school id is needed to scrape scores')
 
+    args = parser.parse_args()
+    score_file = open('scores.json', 'w')
 
-def printDefaults():
-  print("Usage: \n 1st argument is school_id\n seccond argument is url for posting the data to")
-  print("Example: python RMP.py 690 http://myDomain.com/api")
+    rmp = RMP(args.id)
+    obj = rmp.scrape_scores()
 
+    json.dump(obj, score_file)
+    score_file.close()
 
-
+    return 0
 
 # Code to seed data base: can take out "send_to_kv()" and save to dict if neccesary
 if __name__ == '__main__':
-  if(len(sys.argv) < 2):
-    print("Missing arguments")
-    printDefaults()
-    exit(1)
-  
-  print(sys.argv)
-  rmp = RMP(sys.argv[1], sys.argv[2])
-  rmp.scrape_scores()
-  exit(0)
+    exit(main())
