@@ -6,27 +6,22 @@
 
 
 
-
-
-
 import requests
 import json
 import time
 import sys  
-
-
+import argparse
 
 # Rate my professor scraper
 # Scrapes all professors names & scores
 # Sends to server
 # robots.txt states crawl time of 10 secconds
 
-
 class RMP:
-  def __init__(self, school_id, url, crawl_time=10):
+  def __init__(self, school_id,data_file, crawl_time=10):
     self.school_id = school_id
+    self.file = data_file # the file we are writing to 
     self.robots_info = ['']
-    self.url = url
     self.crawl_time = crawl_time
 
   def scrape_scores(self):
@@ -57,8 +52,12 @@ class RMP:
     while (profNum < len(data['professors'])):
       name = data['professors'][profNum]['tFname'] + data['professors'][profNum]['tLname']
       score = data['professors'][profNum]['overall_rating']
-      print(name + ' : ' + score)
-      self.send_to_kv(name, score) #seeds the server
+      #self.send_to_kv(name, score) #seeds the server
+      obj = {name, score}
+
+      print(obj)
+      json.dump(obj,self.file)
+
       profNum += 1
     return True
 
@@ -70,34 +69,31 @@ class RMP:
 
 
 
-  #sends a put request to the db api url
-  #If the scraped value is 'N/A' we are not sending the score
-  def send_to_kv(self, name, score):
-    if(score == 'N/A'): return
+
+def main(): 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('id', help='school id is needed to scrape scores')
+
+    args = parser.parse_args()
+    score_file = open('scores.json', 'w')
     
-    #change this line to work with your api
-    put_url = self.url + '/'+ name + '/' + score #building post url from inputted url
-    r = requests.put(put_url)
-    if r.status_code != 200:
-      print("There was an error sending {}'s score to the kv".format(name))
+    rmp = RMP(args.id, score_file)
+    rmp.scrape_scores()
 
+    score_file.close()
 
-
-def printDefaults():
-  print("Usage: \n 1st argument is school_id\n seccond argument is url for posting the data to")
-  print("Example: python RMP.py 690 http://myDomain.com/api")
-
-
-
+    return 0
 
 # Code to seed data base: can take out "send_to_kv()" and save to dict if neccesary
 if __name__ == '__main__':
+    exit(main())
+
+    '''
   if(len(sys.argv) < 2):
     print("Missing arguments")
     printDefaults()
     exit(1)
-  
-  print(sys.argv)
   rmp = RMP(sys.argv[1], sys.argv[2])
   rmp.scrape_scores()
   exit(0)
+'''
